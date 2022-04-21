@@ -22,6 +22,6 @@ public class Organization extends BaseTimeEntity {
     private String name;
 
     @Column
-    private boolean typeFlag;
+    private int typeFlag;
 
 }

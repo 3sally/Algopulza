@@ -1,5 +1,6 @@
 package com.algopulza.backend.api.controller;
 
+import com.algopulza.backend.api.request.member.ModifyMemberProfileImageReq;
 import com.algopulza.backend.api.request.member.ModifyMemberReq;
 import com.algopulza.backend.api.response.MemberRes;
 import com.algopulza.backend.api.service.MemberService;
@@ -60,4 +61,17 @@ public class MemberController {
         return ResponseEntity.ok(BaseResponseBody.of(HttpStatus.OK, ResponseMessage.MODIFY_MEMBER_INFO_SUCCESS));
     }
 
+    @PatchMapping("/profileImage")
+    @ApiOperation(value = "회원 프로필 이미지 수정하기", notes = "회원 프로필 이미지 수정 API 입니다.")
+    @ApiResponses({@ApiResponse(code = 200, message = ResponseMessage.MODIFY_MEMBER_INFO_SUCCESS, response = ErrorResponse.class),
+            @ApiResponse(code = 400, message = ResponseMessage.BAD_REQUEST, response = ErrorResponse.class),
+            @ApiResponse(code = 401, message = ResponseMessage.UNAUTHORIZED, response = ErrorResponse.class),
+            @ApiResponse(code = 403, message = ResponseMessage.ACCESS_DENIED, response = ErrorResponse.class),
+            @ApiResponse(code = 404, message = ResponseMessage.NOT_FOUND, response = ErrorResponse.class)})
+    public ResponseEntity<BaseResponseBody> modifyMemberProfileImage(@RequestBody ModifyMemberProfileImageReq modifyMemberProfileImageReq) {
+        memberService.modifyMemberProfileImage(modifyMemberProfileImageReq);
+        return ResponseEntity.ok(BaseResponseBody.of(HttpStatus.OK, ResponseMessage.MODIFY_MEMBER_INFO_SUCCESS));
+    }
+
+    //TODO 조직 삭제하기
 }

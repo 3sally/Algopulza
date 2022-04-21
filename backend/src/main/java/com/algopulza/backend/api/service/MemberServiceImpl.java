@@ -1,5 +1,6 @@
 package com.algopulza.backend.api.service;
 
+import com.algopulza.backend.api.request.member.ModifyMemberProfileImageReq;
 import com.algopulza.backend.api.request.member.ModifyMemberReq;
 import com.algopulza.backend.api.response.MemberRes;
 import com.algopulza.backend.common.exception.NotFoundException;
@@ -49,9 +50,19 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public void modifyMember(ModifyMemberReq modifyMemberReq) {
-        Member member = memberRepository.findById(modifyMemberReq.getMemberId()).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND_MEMBER));
+        //organization 등록
+        addOrganization(0,modifyMemberReq.getOrganizationName(),modifyMemberReq.getOrganizationType());
 
-        member.setProfileImage(s3Service.uploadToMember(modifyMemberReq.getProfileImage()));
+        //memberHasOrganization 등록
+        Optional<Member> member = memberRepository.findById(modifyMemberReq.getMemberId());
+        addMemberHasOrganization(member.get().getName(), modifyMemberReq.getOrganizationName());
+    }
+
+    @Override
+    public void modifyMemberProfileImage(ModifyMemberProfileImageReq modifyMemberProfileImageReq) {
+        Member member = memberRepository.findById(modifyMemberProfileImageReq.getMemberId()).orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND_MEMBER));
+
+        member.setProfileImage(s3Service.uploadToMember(modifyMemberProfileImageReq.getProfileImage()));
         memberRepository.save(member);
     }
 
@@ -116,9 +127,8 @@ public class MemberServiceImpl implements MemberService {
             //organization 등록
             int organizationId = Integer.parseInt(jsonNode.get("user").get("organizations").get(i).get("organizationId").toString());
             String organizationName = jsonNode.get("user").get("organizations").get(i).get("name").toString();
-
-            boolean typeFlag = true;
-            addOrganization(organizationId, organizationName, typeFlag);
+            String organizationType = jsonNode.get("user").get("organizations").get(i).get("type").toString();
+            addOrganization(organizationId, organizationName, organizationType);
             //memberHasOrganization 등록
             addMemberHasOrganization(name, organizationName);
         }
@@ -148,6 +158,7 @@ public class MemberServiceImpl implements MemberService {
         });
     }
 
+    //TODO 이미 추가된 그룹이면 memberHasOraganization에 추가 등록 안되게 로직 짜야함
     private void addMemberHasOrganization(String name, String organizationName) {
         Organization organization = organizationRepository.findByName(organizationName);
         Optional<Member> member = Optional.ofNullable(memberRepository.findByName(name));
@@ -159,19 +170,38 @@ public class MemberServiceImpl implements MemberService {
         });
     }
 
-    private void addOrganization(int organizationId, String organizationName, boolean typeFlag) {
-       Optional<Organization> organization =  organizationRepository.findByBojId(organizationId);
+    private void addOrganization(int organizationId, String organizationName, String organizationType) {
+        int typeFlag;
+        switch (organizationType){
+            case "community" :
+                typeFlag = 1;
+                break;
+            case "university" :
+                typeFlag = 2;
+                break;
+            case "company" :
+                typeFlag = 3;
+                break;
+            case "high_school" :
+                typeFlag = 4;
+                break;
+            default:
+                typeFlag = 0;
+                break;
+        }
+
+       Organization organization =  organizationRepository.findByName(organizationName);
        //이미 존재하는 organization이면 pass, 아니면 새로 등록
-       organization.ifPresentOrElse(selectorganization->{
-           System.out.println("organization already exist!!");
-       },()->{
-           System.out.println("new organization");
-           Organization newOrganiation = new Organization();
-           newOrganiation.setBojId(organizationId);
-           newOrganiation.setName(organizationName);
-           newOrganiation.setTypeFlag(typeFlag);
-           organizationRepository.save(newOrganiation);
-       });
+        if (organization!=null) {
+            System.out.println("organization already exist!!");
+        }else{
+            System.out.println("new organization");
+            Organization newOrganiation = new Organization();
+            newOrganiation.setBojId(organizationId);
+            newOrganiation.setName(organizationName);
+            newOrganiation.setTypeFlag(typeFlag);
+            organizationRepository.save(newOrganiation);
+        }
     }
 
     private void addLoginlog(String name) {
