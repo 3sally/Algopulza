@@ -2,6 +2,10 @@ from pydoc import cli
 from pymongo import MongoClient
 from sshtunnel import SSHTunnelForwarder
 import paramiko
+import io
+import base64
+with open('./mongo/K6A408T.pem', 'rb') as f:
+    blob = base64.b64encode(f.read())
 
 
 class MongoRepository:
@@ -14,21 +18,54 @@ class MongoRepository:
 
     # @staticmethod
     def _get_connection(self):
-        MONGO_HOST = 'ubuntu@k6a4081.p.ssafy.io:22'
-        SERVER_USER = 'ubuntu'
+        # MONGO_HOST = 'k6a4081.p.ssafy.io:22'
+        # SERVER_USER = 'ubuntu'
+        # PRIVATE_KEY = 'PATH ./mongo/K6A408T.pem'
 
         # key = open('./mongo/K6A408T.pem', 'r')
-        key = open('./mongo/K6A408T.txt', 'r')
+        # key = open('./mongo/K6A408T.pem', 'r')
+        # PRIVATE_KEY = key
 
-        PRIVATE_KEY = key
+        # # define ssh tunnel
+        # server = SSHTunnelForwarder(
+        #     MONGO_HOST,
+        #     ssh_username=SERVER_USER,
+        #     ssh_pkey=PRIVATE_KEY,
+        #     ssh_password=None,
+        #     remote_bind_address=('localhost', 27017)
+        # )
 
-        # define ssh tunnel
+        remote_user = 'ubuntu'
+        remote_host = 'k6a4081.p.ssafy.io'
+        remote_port = 22
+        local_host = '0.0.0.0'
+        local_port = 27017
+        # pemkey = 'PATH ./mongo/K6A408T.pem'
+        # pemkey = open('./mongo/K6A408T.pem', 'r')
+        for_conn_function = blob.decode('utf-8')
+        SSH_KEY_BLOB_DECODED = base64.b64decode(for_conn_function)
+        SSH_KEY = SSH_KEY_BLOB_DECODED.decode('utf-8')
+        pemkey = paramiko.RSAKey.from_private_key(io.StringIO(SSH_KEY))
+        print("------------------")
+        print("hk")
+        print("------------------")
+        print(blob)
+        print("------------------")
+        print(for_conn_function)
+        # print("------------------")
+        # print(pemkey.seek)
+        # print("------------------")
+        # print(pemkey.read)
+        # print("------------------")
+        # print(pemkey.readline)
+        # print("------------------")
+
         server = SSHTunnelForwarder(
-            MONGO_HOST,
-            # ssh_username=SERVER_USER,
-            ssh_pkey=PRIVATE_KEY,
-            ssh_password=None,
-            remote_bind_address=('localhost', 27017)
+            (remote_host, remote_port),
+            ssh_username=remote_user,
+            ssh_private_key=pemkey,
+            remote_bind_address=(local_host, local_port),
+            local_bind_address=(local_host, local_port),
         )
 
         # start ssh tunnel
