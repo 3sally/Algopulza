@@ -1,5 +1,7 @@
 import ApexCharts from "react-apexcharts";
 import styled from "styled-components";
+import { getWeek } from "api/weakness";
+import { useEffect, useState } from "react";
 
 const Container = styled.div`
   width: 90%;
@@ -15,6 +17,27 @@ const Title = styled.div`
 `;
 
 const Solved = () => {
+  const [label, setLabel] = useState<Array<string>>();
+  const [solved, setSolved] = useState<Array<number>>([]);
+  useEffect(() => {
+    getWeek()
+      .then((res) => {
+        console.log(res.data);
+        const week = res.data;
+        let label_temp = [];
+        let solved_temp = [];
+        let idx = 0;
+        for (idx; idx < week.length; idx++) {
+          label_temp.push(week[idx].key);
+          solved_temp.push(week[idx].solvedcnt);
+        }
+        setLabel(label_temp);
+        setSolved(solved_temp);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+  console.log(label);
+  console.log(solved);
   return (
     <Container>
       <Title>태그 별 해결 문제 수</Title>
@@ -23,7 +46,7 @@ const Solved = () => {
         series={[
           {
             name: "Tag",
-            data: [15, 18, 22, 21, 24, 16, 10, 11, 16, 20],
+            data: solved,
           },
         ]}
         options={{
@@ -42,18 +65,7 @@ const Solved = () => {
             labels: {},
           },
           xaxis: {
-            categories: [
-              "deque",
-              "hashing",
-              "trees",
-              "bitmask",
-              "divide_and_conquer",
-              "euclidean",
-              "arbitrary_precision",
-              "pythagoras",
-              "geometry",
-              "combinatorics",
-            ],
+            categories: label,
             labels: {},
           },
           plotOptions: {

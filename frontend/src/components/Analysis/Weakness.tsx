@@ -1,6 +1,7 @@
 import ApexCharts from "react-apexcharts";
 import styled from "styled-components";
 import { getWeek } from "api/weakness";
+import { useEffect, useState } from "react";
 
 const Container = styled.div`
   width: 90%;
@@ -17,9 +18,27 @@ const Title = styled.div`
 `;
 
 const Weakness = () => {
-  getWeek()
-    .then((res) => console.log(res))
-    .catch((err) => console.log(err));
+  const [label, setLabel] = useState<Array<string>>();
+  const [solved, setSolved] = useState<Array<number>>([]);
+  useEffect(() => {
+    getWeek()
+      .then((res) => {
+        console.log(res.data);
+        const week = res.data;
+        let label_temp = [];
+        let solved_temp = [];
+        let idx = 0;
+        for (idx; idx < week.length; idx++) {
+          label_temp.push(week[idx].key);
+          solved_temp.push(week[idx].solvedcnt);
+        }
+        setLabel(label_temp);
+        setSolved(solved_temp);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+  console.log(label);
+  console.log(solved);
   return (
     <Container>
       <Title>취약점</Title>
@@ -28,7 +47,7 @@ const Weakness = () => {
         series={[
           {
             name: "Tag",
-            data: [3, 5, 9, 6, 5, 4],
+            data: solved,
           },
         ]}
         options={{
@@ -46,13 +65,16 @@ const Weakness = () => {
           },
           yaxis: {
             show: true,
+            min: 0,
+            max: 2,
+            tickAmount: 2,
           },
           xaxis: {
-            categories: ["DFS", "BFS", "DP", "math", "greedy", "graphs"],
+            categories: label,
           },
           plotOptions: {
             radar: {
-              size: 110,
+              size: 100,
               offsetX: 0,
               offsetY: 0,
               polygons: {
