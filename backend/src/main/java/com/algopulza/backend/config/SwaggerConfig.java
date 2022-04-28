@@ -44,7 +44,7 @@ public class SwaggerConfig {
     private ApiInfo apiInfo(String title, String version) {
         return new ApiInfo(
                 title,
-                "헤더 토큰 값 : [Bearer 토큰값]",
+                "헤더 토큰 값 => \"X-AUTH-TOKEN\" : \"TOKEN값\" ",
                 version,
                 "algopulza.com",
                 new Contact("contact me","algopulza.com","algopulza.com"),
