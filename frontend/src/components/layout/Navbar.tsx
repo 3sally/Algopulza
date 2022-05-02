@@ -23,18 +23,43 @@ const TabContainer = styled.div`
   align-items: center;
 `;
 
+const Button = styled.div`
+  margin-left: auto;
+  margin-right: 1rem;
+  text-align: center;
+  line-height: 3rem;
+  width: 10rem;
+  height: 3rem;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: GmarketSansMedium;
+  background-color: #ffc94d;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  transition: 0.2s;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+`
+
 const Navbar = () => {
   const location = useLocation();
   const [isSelected, setIsSelected] = useState("/");
   const navigate = useNavigate();
+
   const onClick = (url: string) => {
     navigate(url);
     setIsSelected(url);
   };
 
+  const onReset = () => {
+    window.location.reload();
+  }
+
   useEffect(() => {
     setIsSelected("/" + location.pathname.split("/")[1]);
   }, [location]);
+
 
   return (
     <Container>
@@ -65,6 +90,12 @@ const Navbar = () => {
           isSelected={isSelected}
         />
       </TabContainer>
+      <Button
+      onClick={onReset}
+      title="문제를 풀고 와서 업데이트를 하고 싶으면
+      이 버튼을 눌러주세요!">
+        문제 풀이 업데이트
+        </Button>
     </Container>
   );
 };
